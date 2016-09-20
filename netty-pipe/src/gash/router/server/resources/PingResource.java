@@ -1,5 +1,5 @@
 /**
- * Copyright 2012 Gash.
+ * Copyright 2016 Gash.
  *
  * This file and intellectual content is protected under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -15,6 +15,9 @@
  */
 package gash.router.server.resources;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * responds to request for pinging the service
  * 
@@ -22,6 +25,7 @@ package gash.router.server.resources;
  * 
  */
 public class PingResource implements RouteResource {
+	protected static Logger logger = LoggerFactory.getLogger("ping");
 
 	@Override
 	public String getPath() {
@@ -30,8 +34,7 @@ public class PingResource implements RouteResource {
 
 	@Override
 	public String process(String body) {
-		// TODO process message
-		System.out.println("---> " + getPath());
+		logger.info(body);
 		return "success";
 	}
 

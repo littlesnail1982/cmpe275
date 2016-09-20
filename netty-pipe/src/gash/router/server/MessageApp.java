@@ -1,5 +1,5 @@
 /**
- * Copyright 2012 Gash.
+ * Copyright 2016 Gash.
  *
  * This file and intellectual content is protected under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -15,13 +15,7 @@
  */
 package gash.router.server;
 
-import gash.router.container.JsonBuilder;
-import gash.router.container.RoutingConf;
-
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 
 /**
  * @author gash1
@@ -39,23 +33,13 @@ public class MessageApp {
 		}
 
 		File cf = new File(args[0]);
-		byte[] raw = new byte[(int) cf.length()];
-		BufferedInputStream is = null;
 		try {
-			is = new BufferedInputStream(new FileInputStream(cf));
-			is.read(raw);
-			RoutingConf conf = JsonBuilder.decode(new String(raw),
-					RoutingConf.class);
-			MessageServer svr = new MessageServer(conf);
-			svr.run();
+			MessageServer svr = new MessageServer(cf);
+			svr.startServer();
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			try {
-				if (is != null)
-					is.close();
-			} catch (IOException e) {
-			}
+			System.out.println("server closing");
 		}
 	}
 }

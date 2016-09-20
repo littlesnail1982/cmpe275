@@ -1,5 +1,5 @@
 /**
- * Copyright 2012 Gash.
+ * Copyright 2016 Gash.
  *
  * This file and intellectual content is protected under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -15,22 +15,64 @@
  */
 package gash.router.app;
 
-import gash.router.client.RoutingClient;
-import gash.router.client.RoutingFactory;
+import gash.router.client.CommConnection;
+import gash.router.client.CommListener;
+import gash.router.client.MessageClient;
+import routing.Pipe.Route;
 
-import java.util.Properties;
+public class DemoApp implements CommListener {
+	private MessageClient mc;
 
-public class DemoApp {
-	private static final String sName = "demo";
+	public DemoApp(MessageClient mc) {
+		init(mc);
+	}
 
-	public static Properties appConf() {
-		// create a connection to a remote service/server. We name the service
-		// as we can create/manage multiple connections
-		Properties conf = new Properties();
-		conf.setProperty(RoutingFactory.sServerName, sName);
-		conf.setProperty(RoutingFactory.sServerHost, "localhost");
-		conf.setProperty(RoutingFactory.sServerPort, "5570");
-		return conf;
+	private void init(MessageClient mc) {
+		this.mc = mc;
+		this.mc.addListener(this);
+	}
+
+	private void ping(int N) {
+		// test round-trip overhead (note overhead for initial connection)
+		final int maxN = 10;
+		long[] dt = new long[N];
+		long st = System.currentTimeMillis(), ft = 0;
+		for (int n = 0; n < N; n++) {
+			mc.ping();
+			ft = System.currentTimeMillis();
+			dt[n] = ft - st;
+			st = ft;
+		}
+
+		System.out.println("Round-trip ping times (msec)");
+		for (int n = 0; n < N; n++)
+			System.out.print(dt[n] + " ");
+		System.out.println("");
+
+		// send a message
+		st = System.currentTimeMillis();
+		ft = 0;
+		for (int n = 0; n < N; n++) {
+			mc.postMessage("hello world " + n);
+			ft = System.currentTimeMillis();
+			dt[n] = ft - st;
+			st = ft;
+		}
+
+		System.out.println("Round-trip post times (msec)");
+		for (int n = 0; n < N; n++)
+			System.out.print(dt[n] + " ");
+		System.out.println("");
+	}
+
+	@Override
+	public String getListenerID() {
+		return "demo";
+	}
+
+	@Override
+	public void onMessage(Route msg) {
+		System.out.println("---> " + msg);
 	}
 
 	/**
@@ -39,45 +81,23 @@ public class DemoApp {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		RoutingFactory factory = RoutingFactory.getInstance();
-		factory.initConnection(DemoApp.appConf());
+		String host = "127.0.0.1";
+		int port = 4567;
 
 		try {
-			RoutingClient rc = factory.lookupService(sName);
+			MessageClient mc = new MessageClient(host, port);
+			DemoApp da = new DemoApp(mc);
 
-			// test round-trip overhead (note overhead for initial connection)
-			final int maxN = 10;
-			long[] dt = new long[maxN];
-			long st = System.currentTimeMillis(), ft = 0;
-			for (int n = 0; n < maxN; n++) {
-				rc.ping();
-				ft = System.currentTimeMillis();
-				dt[n] = ft - st;
-				st = ft;
-			}
+			// do stuff w/ the connection
+			da.ping(2);
 
-			System.out.println("Round-trip ping times (msec)");
-			for (int n = 0; n < maxN; n++)
-				System.out.print(dt[n] + " ");
-			System.out.println("");
-
-			// send a message
-			st = System.currentTimeMillis();
-			ft = 0;
-			for (int n = 0; n < maxN; n++) {
-				rc.postMessage("hello world " + n);
-				ft = System.currentTimeMillis();
-				dt[n] = ft - st;
-				st = ft;
-			}
-
-			System.out.println("Round-trip post times (msec)");
-			for (int n = 0; n < maxN; n++)
-				System.out.print(dt[n] + " ");
-			System.out.println("");
-
+			System.out.println("\n** exiting in 10 seconds. **");
+			System.out.flush();
+			Thread.sleep(10 * 1000);
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			CommConnection.getInstance().release();
 		}
 	}
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<project name="NIO-based (JBoss Netty) communication pipeline" basedir="." default="build">
+<project name="NIO-based (Netty) communication pipeline" basedir="." default="build">
 
 	<target name="init">
 		<property name="src.dir" location="${basedir}/src" />
@@ -7,7 +7,7 @@
 		<property name="build.dir" location="${basedir}/classes" />
 
 		<property name="config.dir" location="${basedir}/resources" />
-		<property name="protobuf.dir" location="/Users/gash1/Developer/protobuf/current" />
+		<property name="protobuf.dir" location="/Users/gash/Developer/protobuf/current" />
 		<property name="junit.jar" location="/Users/gash/Developer/junit-4.8.2.jar" />
 		<property name="logging.jar" location="${basedir}/lib/slf4j-log4j12-1.6.1.jar" />
 
@@ -32,6 +32,11 @@
 
 	<target name="build" depends="clean">
 		<mkdir dir="${build.dir}" />
+
+		<javac destdir="${build.dir}" debug="true" deprecation="false" optimize="false" failonerror="true">
+            <src path="${basedir}/generated" />
+			<classpath refid="project.classpath" />
+		</javac>
 
 		<javac destdir="${build.dir}" debug="true" deprecation="false" optimize="false" failonerror="true">
 			<src path="${src.dir}" />

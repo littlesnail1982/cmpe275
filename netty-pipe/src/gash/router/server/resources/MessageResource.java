@@ -1,5 +1,5 @@
 /**
- * Copyright 2012 Gash.
+ * Copyright 2016 Gash.
  *
  * This file and intellectual content is protected under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -15,6 +15,9 @@
  */
 package gash.router.server.resources;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * processes requests of message passing - demonstration
  * 
@@ -22,6 +25,7 @@ package gash.router.server.resources;
  * 
  */
 public class MessageResource implements RouteResource {
+	protected static Logger logger = LoggerFactory.getLogger("message");
 
 	@Override
 	public String getPath() {
@@ -33,8 +37,7 @@ public class MessageResource implements RouteResource {
 		if (body == null || body.trim().length() == 0)
 			throw new RuntimeException("Missing/Null data");
 
-		// TODO decode and process here with a meaningful reply
-		System.out.println("---> " + getPath() + " : " + body);
+		logger.info(body);
 		return "good";
 	}
 
