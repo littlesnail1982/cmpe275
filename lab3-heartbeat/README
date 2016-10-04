@@ -1,0 +1,22 @@
+A more feature rich (complex) example of the netty-pipe example. This version 
+introduces:
+
+1. private vs public facing connections
+2. heartbeat monitoring of failure
+3. independent thread pool management of queue workers
+4. start of adding task managment QoS
+
+
+File descriptor limits (mac os x)
+
+sudo vi /etc/sysctl.conf
+
+add lines:
+kern.maxfiles=65536
+kern.maxfilesperproc=65536
+
+run:
+sudo sysctl -w kern.maxfiles=65536
+sudo sysctl -w kern.maxfilesperproc=65536
+ulimit -n 65536 65536
+

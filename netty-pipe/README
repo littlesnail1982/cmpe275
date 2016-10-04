@@ -8,3 +8,13 @@ Technologies introduced:
 1. Netty
 2. Protobuf
 3. JAXB
+
+
+How to build: 
+1. sudo apt-get install protobuf-compiler
+2. ./build_pb.sh
+3. ant
+
+How to run:
+1. server part:  ./startServer.sh
+2. client part:   ./runPing.sh 
