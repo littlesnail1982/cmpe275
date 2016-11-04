@@ -65,6 +65,7 @@
 		</java>
 	</target>
 
+
 	<target name="server" depends="build">
 		<java fork="yes" classname="gash.router.server.MessageApp">
 			<classpath refid="project.classpath" />

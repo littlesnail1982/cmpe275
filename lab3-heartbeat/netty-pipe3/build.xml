@@ -34,6 +34,11 @@
 		<mkdir dir="${build.dir}" />
 
 		<javac destdir="${build.dir}" debug="true" deprecation="false" optimize="false" failonerror="true">
+            <src path="${basedir}/generated" />
+			<classpath refid="project.classpath" />
+		</javac>
+		
+		<javac destdir="${build.dir}" debug="true" deprecation="false" optimize="false" failonerror="true">
 			<src path="${src.dir}" />
 			<classpath refid="project.classpath" />
 		</javac>

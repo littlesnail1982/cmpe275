@@ -15,11 +15,18 @@
  */
 package gash.router.server.edges;
 
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioSocketChannel;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gash.router.container.RoutingConf.RoutingEntry;
 import gash.router.server.ServerState;
+import gash.router.server.WorkInit;
 import pipe.common.Common.Header;
 import pipe.work.Work.Heartbeat;
 import pipe.work.Work.WorkMessage;
@@ -74,7 +81,8 @@ public class EdgeMonitor implements EdgeListener, Runnable {
 		WorkMessage.Builder wb = WorkMessage.newBuilder();
 		wb.setHeader(hb);
 		wb.setBeat(bb);
-
+		wb.setSecret(123);
+		
 		return wb.build();
 	}
 
@@ -92,7 +100,13 @@ public class EdgeMonitor implements EdgeListener, Runnable {
 						ei.getChannel().writeAndFlush(wm);
 					} else {
 						// TODO create a client to the node
-						logger.info("trying to connect to node " + ei.getRef());
+						Channel channel = connectToChannel(ei.getHost(), ei.getPort());
+						ei.setChannel(channel);
+						System.out.println("Connected to Channel with host " + ei.getHost() + "port:" + ei.getPort());
+						ei.setActive(true);
+						if (channel == null) {
+							logger.info("trying to connect to node " + ei.getRef());
+						}
 					}
 				}
 
@@ -102,6 +116,25 @@ public class EdgeMonitor implements EdgeListener, Runnable {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	private Channel connectToChannel(String host, int port) {
+		Bootstrap b = new Bootstrap();
+		NioEventLoopGroup nioEventLoopGroup = new NioEventLoopGroup();
+		WorkInit workInit = new WorkInit(null, false);
+
+		try {
+			b.group(nioEventLoopGroup).channel(NioSocketChannel.class).handler(workInit);
+			b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000);
+			b.option(ChannelOption.TCP_NODELAY, true);
+			b.option(ChannelOption.SO_KEEPALIVE, true);
+
+			// Make the connection attempt.
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return b.connect(host, port).syncUninterruptibly().channel();
+
 	}
 
 	@Override

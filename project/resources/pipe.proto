@@ -14,5 +14,9 @@ message CommandMessage {
       FileRequest filerequest=3;
 
       Failure err = 4;
+      
+      bool ping = 6;
+
+      string message = 5;
     }
 }

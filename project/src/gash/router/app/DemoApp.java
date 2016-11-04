@@ -20,6 +20,8 @@ import gash.router.client.CommListener;
 import gash.router.client.MessageClient;
 import routing.Pipe.CommandMessage;
 
+import java.lang.Integer;
+
 public class DemoApp implements CommListener {
 	private MessageClient mc;
 
@@ -67,7 +69,7 @@ public class DemoApp implements CommListener {
 	 */
 	public static void main(String[] args) {
 		String host = "127.0.0.1";
-		int port = 4667;
+		int port = Integer.parseInt(args[1]);
 
 		try {
 			MessageClient mc = new MessageClient(host, port);
