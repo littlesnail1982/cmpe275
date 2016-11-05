@@ -18,7 +18,7 @@ message Header {
 }
 
 message Failure {
-    optional int32 id = 1;
+    required int32 id = 1;
     optional int32 ref_id = 2;
     optional string message = 3;
 }

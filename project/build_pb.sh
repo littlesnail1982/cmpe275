@@ -24,7 +24,12 @@ fi
 
 
 $PROTOC_HOME/usr/local/bin/protoc --proto_path=${project_base}/resources --java_out=${project_base}/generated ${project_base}/resources/common.proto
-$PROTOC_HOME/usr/local/bin/protoc --proto_path=${project_base}/resources --java_out=${project_base}/generated ${project_base}/resources/election.proto
-$PROTOC_HOME/usr/local/bin/protoc --proto_path=${project_base}/resources --java_out=${project_base}/generated ${project_base}/resources/work.proto
-$PROTOC_HOME/usr/local/bin/protoc --proto_path=${project_base}/resources --java_out=${project_base}/generated ${project_base}/resources/filemessage.proto
-$PROTOC_HOME/usr/local/bin/protoc --proto_path=${project_base}/resources --java_out=${project_base}/generated ${project_base}/resources/pipe.proto
+$PROTOC_HOME/usr/local/bin/protoc --proto_path=${project_base}/resources --java_out=${project_base}/generated ${project_base}/resources/Ping.proto
+
+$PROTOC_HOME/usr/local/bin/protoc --proto_path=${project_base}/resources --java_out=${project_base}/generated ${project_base}/resources/AppendEntriesRPC.proto
+
+$PROTOC_HOME/usr/local/bin/protoc --proto_path=${project_base}/resources --java_out=${project_base}/generated ${project_base}/resources/HeartBeatRPC.proto
+
+$PROTOC_HOME/usr/local/bin/protoc --proto_path=${project_base}/resources --java_out=${project_base}/generated ${project_base}/resources/VoteRPC.proto
+
+$PROTOC_HOME/usr/local/bin/protoc --proto_path=${project_base}/resources --java_out=${project_base}/generated ${project_base}/resources/Work.proto

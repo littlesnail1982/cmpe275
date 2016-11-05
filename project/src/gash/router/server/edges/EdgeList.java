@@ -51,6 +51,10 @@ public class EdgeList {
 			return true;
 	}
 
+	public HashMap<Integer, EdgeInfo> getMap() {
+		return map;
+	}
+	
 	public boolean hasNode(int ref) {
 		return map.containsKey(ref);
 

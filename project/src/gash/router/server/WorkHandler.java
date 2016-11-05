@@ -26,6 +26,8 @@ import pipe.work.Work.Heartbeat;
 import pipe.work.Work.Task;
 import pipe.work.Work.WorkMessage;
 import pipe.work.Work.WorkState;
+import raft.NodeState;
+import server.ServerUtils;
 
 /**
  * The message handler processes json messages that are delimited by a 'newline'
@@ -38,7 +40,7 @@ import pipe.work.Work.WorkState;
 public class WorkHandler extends SimpleChannelInboundHandler<WorkMessage> {
 	protected static Logger logger = LoggerFactory.getLogger("work");
 	protected ServerState state;
-	protected boolean debug = false;
+	protected boolean debug = true;
 
 	public WorkHandler(ServerState state) {
 		if (state != null) {
@@ -68,41 +70,44 @@ public class WorkHandler extends SimpleChannelInboundHandler<WorkMessage> {
 
 		// TODO How can you implement this without if-else statements?
 		try {
-			if (msg.hasBeat()) {
-				System.out.println("Recieved HB");
-				Heartbeat hb = msg.getBeat();
-				logger.debug("heartbeat from " + msg.getHeader().getNodeId());
-				
-			} else if (msg.hasPing()) {
-				System.out.println("Has Ping");
-				logger.info("ping from " + msg.getHeader().getNodeId());
-				boolean p = msg.getPing();
-				WorkMessage.Builder rb = WorkMessage.newBuilder();
-				rb.setPing(true);
-				rb.setSecret(1);
-				channel.write(rb.build());
-			} else if (msg.hasErr()) {
-				System.out.println("Hasa eror");
-				Failure err = msg.getErr();
-				logger.error("failure from " + msg.getHeader().getNodeId());
-				// PrintUtil.printFailure(err);
-			} else if (msg.hasTask()) {
-				Task t = msg.getTask();
-			} else if (msg.hasState()) {
-				WorkState s = msg.getState();
+			if (msg.hasTrivialPing()) {
+				Logger.DEBUG(" The node: " + msg.getTrivialPing().getNodeId() + " Is Active to this IP: "
+						+ msg.getTrivialPing().getIP());
+				Logger.DEBUG("Currrent Term " + NodeState.currentTerm);
+				NodeState.getInstance().getServerState().getEmon().getOutboundEdges()
+						.getNode(msg.getTrivialPing().getNodeId()).setChannel(channel);
+
+			} else if (msg.hasHeartBeatPacket() && msg.getHeartBeatPacket().hasHeartbeat()) {
+				System.out.println(
+						"Heart Beat Packet recieved from " + msg.getHeartBeatPacket().getHeartbeat().getLeaderId());
+
+				WorkMessage.Builder work = WorkMessage.newBuilder();
+				work.setUnixTimeStamp(ServerUtils.getCurrentUnixTimeStamp());
+				NodeState.getInstance().getService().handleHeartBeat(msg);
+
+				// channel.write(work.build());
+
+			} else if (msg.hasHeartBeatPacket() && msg.getHeartBeatPacket().hasHeartBeatResponse()) {
+				Logger.DEBUG(
+						"Response is Received from " + msg.getHeartBeatPacket().getHeartBeatResponse().getNodeId());
+				NodeState.getService().handleHeartBeatResponse(msg);
 			}
+
+			else if (msg.hasVoteRPCPacket() && msg.getVoteRPCPacket().hasRequestVoteRPC()) {
+				WorkMessage voteResponse = NodeState.getInstance().getService().handleRequestVoteRPC(msg);
+				channel.write(voteResponse);
+			} else if (msg.hasVoteRPCPacket() && msg.getVoteRPCPacket().hasResponseVoteRPC()) {
+				//Xing Yang added
+				NodeState.getInstance().getService().handleResponseVoteRPCs(msg);
+				
+			} else if (msg.hasAppendEntriesPacket() && msg.getAppendEntriesPacket().hasAppendEntries()) {
+
+				NodeState.getInstance().getService().handleAppendEntries(msg);
+			}
+
 		} catch (Exception e) {
-			// TODO add logging
-			System.out.println("Got an exception");
-			
-			Failure.Builder eb = Failure.newBuilder();
-			eb.setId(state.getConf().getNodeId());
-			eb.setRefId(msg.getHeader().getNodeId());
-			eb.setMessage(e.getMessage());
-			WorkMessage.Builder rb = WorkMessage.newBuilder(msg);
-			rb.setErr(eb);
-			rb.setSecret(1);
-			channel.write(rb.build());
+			e.printStackTrace();
+
 		}
 
 		System.out.flush();

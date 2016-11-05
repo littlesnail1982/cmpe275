@@ -26,9 +26,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gash.router.container.RoutingConf;
+import gash.router.raft.NodeState;
 import gash.router.server.edges.EdgeMonitor;
-import gash.router.server.tasks.NoOpBalancer;
-import gash.router.server.tasks.TaskList;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
@@ -52,8 +51,9 @@ public class MessageServer {
 	 * 
 	 * @param cfg
 	 */
-	public MessageServer(File cfg) {
+	public MessageServer(File cfg, File qConf) {
 		init(cfg);
+		ConfigurationReader.getInstance().loadProperties(qConf);
 	}
 
 	public MessageServer(RoutingConf conf) {
@@ -115,6 +115,11 @@ public class MessageServer {
 				}
 			}
 		}
+		
+		//LEADER ELECTION
+		//at first all the server set to be follower, in this setState() function, it will finally call
+		//initFollower() function in FollowerServer Class, which turns the server to candidate.
+		NodeState.getInstance().setState(NodeState.FOLLOWER);
 	}
 
 	private boolean verifyConf(RoutingConf conf) {
@@ -192,10 +197,11 @@ public class MessageServer {
 			state = new ServerState();
 			state.setConf(conf);
 
-			TaskList tasks = new TaskList(new NoOpBalancer());
-			state.setTasks(tasks);
-
 			EdgeMonitor emon = new EdgeMonitor(state);
+			
+			//LEADER ELECTION
+			NodeState.getInstance().setServerState(state);
+			
 			Thread t = new Thread(emon);
 			t.start();
 		}

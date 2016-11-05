@@ -15,11 +15,15 @@
  */
 package gash.router.server.edges;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gash.router.container.RoutingConf.RoutingEntry;
 import gash.router.server.ServerState;
+import gash.router.server.ServerUtils;
 import gash.router.server.WorkHandler;
 import gash.router.server.WorkInit;
 import io.netty.bootstrap.Bootstrap;
@@ -28,8 +32,6 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import pipe.common.Common.Header;
-import pipe.work.Work.Heartbeat;
 import pipe.work.Work.WorkMessage;
 import pipe.work.Work.WorkState;
 
@@ -44,6 +46,13 @@ public class EdgeMonitor implements EdgeListener, Runnable {
 	private boolean forever = true;
 	ChannelFuture channelFuture;
 	
+	public EdgeList getOutboundEdges() {
+		return outboundEdges;
+	}
+
+	public EdgeList getInboundEdges() {
+		return inboundEdges;
+	}
 
 	public EdgeMonitor(ServerState state) {
 		if (state == null)
@@ -69,24 +78,20 @@ public class EdgeMonitor implements EdgeListener, Runnable {
 		inboundEdges.createIfNew(ref, host, port);
 	}
 
-	private WorkMessage createHB(EdgeInfo ei) {
-		WorkState.Builder sb = WorkState.newBuilder();
-		sb.setEnqueued(-1);
-		sb.setProcessed(-1);
+	private WorkMessage createPing(EdgeInfo ei) {
+		WorkState.Builder wb = WorkState.newBuilder();
+		PingMessage.Builder pingMessage = PingMessage.newBuilder();
 
-		Heartbeat.Builder bb = Heartbeat.newBuilder();
-		bb.setState(sb);
-
-		Header.Builder hb = Header.newBuilder();
-		hb.setNodeId(state.getConf().getNodeId());
-		hb.setDestination(-1);
-		hb.setTime(System.currentTimeMillis());
-
-		WorkMessage.Builder wb = WorkMessage.newBuilder();
-		wb.setHeader(hb);
-		wb.setBeat(bb);
-		wb.setSecret(1);
-
+		pingMessage.setNodeId(state.getConf().getNodeId());
+		try {
+			pingMessage.setIP(InetAddress.getLocalHost().getHostAddress());
+			pingMessage.setPort(0000);
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		wb.setUnixTimeStamp(ServerUtils.getCurrentUnixTimeStamp());
+		wb.setTrivialPing(pingMessage);
 
 		return wb.build();
 	}
@@ -128,19 +133,15 @@ public class EdgeMonitor implements EdgeListener, Runnable {
 			try {
 				for (EdgeInfo ei : this.outboundEdges.map.values()) {
 								
-					if(ei.getChannel()==null){
-						System.out.println("dead here");
-						//EdgeMonitor em = new EdgeMonitor(state);
-						this.createChannel(ei);
-						System.out.println("here is the channel:"+ei.getChannel());
-						
-					}
 					if (ei.isActive() && ei.getChannel() != null) {
-						//Heartbeat is created and appended in WorkMesaage to pass to servers
-						WorkMessage wm = createHB(ei);						
-						ei.getChannel().writeAndFlush(wm);
+						WorkMessage wm = createPing(ei);						
+						ChannelFuture cf = ei.getChannel().writeAndFlush(wm);
+						if (cf.isDone() && !cf.isSuccess()) {
+							System.out.println("failed to send Ping Message  to server");
+						}
 					} else {
 						// TODO create a client to the node
+						createChannel(ei);
 						logger.info("trying to connect to node " + ei.getRef());
 						logger.info("Connected to node " + ei.getRef() + ei.isActive());
 					}

@@ -27,15 +27,17 @@ public class MessageApp {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		if (args.length == 0) {
-			System.out.println("usage: server <config file>");
+		if (args.length < 2) {
+			System.out.println("usage: startServer.sh routing.conf queue.conf");
 			System.exit(1);
 		}
 
 		File cf = new File(args[0]);
+		File queueConf = new File(args[1]);
 		try {
-			MessageServer svr = new MessageServer(cf);
+			MessageServer svr = new MessageServer(cf ,queueConf);
 			svr.startServer();
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
