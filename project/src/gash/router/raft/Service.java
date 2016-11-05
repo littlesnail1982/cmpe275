@@ -1,6 +1,6 @@
 package gash.router.raft;
 
-import pipe.work.Work.WorkMessage;
+import raft.proto.Work.WorkMessage;
 
 public class Service {
 

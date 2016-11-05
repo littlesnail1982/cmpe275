@@ -15,19 +15,13 @@
  */
 package gash.router.server;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import gash.router.util.Logger;
+import gash.router.raft.NodeState;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import pipe.common.Common.Failure;
-import pipe.work.Work.Heartbeat;
-import pipe.work.Work.Task;
-import pipe.work.Work.WorkMessage;
-import pipe.work.Work.WorkState;
-import raft.NodeState;
-import server.ServerUtils;
+import raft.proto.Work.WorkMessage;
 
 /**
  * The message handler processes json messages that are delimited by a 'newline'
@@ -38,7 +32,6 @@ import server.ServerUtils;
  * 
  */
 public class WorkHandler extends SimpleChannelInboundHandler<WorkMessage> {
-	protected static Logger logger = LoggerFactory.getLogger("work");
 	protected ServerState state;
 	protected boolean debug = true;
 
@@ -131,8 +124,6 @@ public class WorkHandler extends SimpleChannelInboundHandler<WorkMessage> {
 
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-		logger.error("WorkHandler: A server just disconnected!", cause);
-		logger.error("Unexpected exception from downstream Work Handler", cause);
 		ctx.close();
 	}
 

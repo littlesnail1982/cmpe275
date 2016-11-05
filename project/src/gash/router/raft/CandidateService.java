@@ -1,9 +1,11 @@
 	package gash.router.raft;
 	
-	import gash.router.server.edges.EdgeInfo;
+	import gash.router.server.ServerUtils;
+import gash.router.server.edges.EdgeInfo;
 import gash.router.util.Logger;
 import io.netty.channel.ChannelFuture;
-import pipe.work.Work.WorkMessage;
+import raft.proto.VoteRPC.ResponseVoteRPC;
+import raft.proto.Work.WorkMessage;
 	
 	public class CandidateService extends Service implements Runnable {
 	

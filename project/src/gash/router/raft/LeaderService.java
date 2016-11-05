@@ -2,13 +2,15 @@ package gash.router.raft;
 
 import java.util.List;
 
+import gash.router.queue.ServerQueueService;
 import gash.router.server.ConfigurationReader;
 import gash.router.server.db.DatabaseService;
 import gash.router.server.db.Record;
 import gash.router.server.edges.EdgeInfo;
 import gash.router.util.Logger;
 import io.netty.channel.ChannelFuture;
-import pipe.work.Work.WorkMessage;
+import raft.proto.AppendEntriesRPC.AppendEntries.RequestType;
+import raft.proto.Work.WorkMessage;
 
 public class LeaderService extends Service implements Runnable {
 
@@ -135,26 +137,25 @@ public class LeaderService extends Service implements Runnable {
 				}
 			}
 		}
-		if (ConfigurationReader.getInstance().getMonitorHost() != null && ConfigurationReader.getInstance().getMonitorPort() != null) {
-			sendClusterMonitor(ConfigurationReader.getInstance().getMonitorHost(), ConfigurationReader.getInstance().getMonitorPort());
-		}		
+//		if (ConfigurationReader.getInstance().getMonitorHost() != null && ConfigurationReader.getInstance().getMonitorPort() != null) {
+//			sendClusterMonitor(ConfigurationReader.getInstance().getMonitorHost(), ConfigurationReader.getInstance().getMonitorPort());
+//		}		
 	}
 	
-	public void sendClusterMonitor(String host, int port) {
-		try {
-			MonitorClient mc = new MonitorClient(host, port);
-			MonitorClientApp ma = new MonitorClientApp(mc);
-			// do stuff w/ the connection
-			System.out.println("Creating message");
-			ClusterMonitor msg = ma.sendDummyMessage(countActiveNodes(),NodeState.getupdatedTaskCount());
-			System.out.println("Sending generated message");
-			mc.write(msg);	
-		}catch(Exception e) {
-			e.printStackTrace();
-		}
-		
-		
-	}
+//	public void sendClusterMonitor(String host, int port) {
+//		try {
+//			MonitorClient mc = new MonitorClient(host, port);
+//			MonitorClientApp ma = new MonitorClientApp(mc);
+//			// do stuff w/ the connection
+//			System.out.println("Creating message");
+//			ClusterMonitor msg = ma.sendDummyMessage(countActiveNodes(),NodeState.getupdatedTaskCount());
+//			System.out.println("Sending generated message");
+//			mc.write(msg);	
+//		}catch(Exception e) {
+//			e.printStackTrace();
+//		}	
+//	}
+	
 	public int countActiveNodes() {
 		int count = 0;
 		for (EdgeInfo ei : NodeState.getInstance().getServerState().getEmon().getOutboundEdges().getMap()

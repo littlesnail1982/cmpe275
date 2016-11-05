@@ -17,7 +17,7 @@ package gash.router.server;
 
 import pipe.common.Common.Failure;
 import pipe.common.Common.Header;
-import pipe.work.Work.WorkMessage;
+import raft.proto.Work.WorkMessage;
 import routing.Pipe.CommandMessage;
 
 public class PrintUtil {
@@ -53,17 +53,15 @@ public class PrintUtil {
 	}
 
 	public static void printWork(WorkMessage msg) {
-		PrintUtil.printHeader(msg.getHeader());
-
 		System.out.print("\nWork: ");
-		if (msg.hasErr())
-			System.out.println("Failure");
-		else if (msg.hasPing())
-			System.out.println("Ping");
-		else
-			System.out.println("Unknown");
+		if (msg.hasHeartBeatPacket()) {
+			System.out.println("\n--------------HeartBeatPacket---------------\n");
+			System.out.println(msg.getHeartBeatPacket().getUnixTimestamp());
+			if (msg.getHeartBeatPacket().hasHeartbeat()) {
+				System.out.println(msg.getHeartBeatPacket().getHeartbeat().getLeaderId());
 
-		System.out.println(PrintUtil.gap + "Sec:  " + msg.getSecret());
+			}
+		}
 	}
 
 	public static void printFailure(Failure f) {

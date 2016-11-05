@@ -32,8 +32,9 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import pipe.work.Work.WorkMessage;
-import pipe.work.Work.WorkState;
+import raft.proto.Ping.PingMessage;
+import raft.proto.Work.WorkMessage;
+
 
 public class EdgeMonitor implements EdgeListener, Runnable {
 
@@ -79,7 +80,7 @@ public class EdgeMonitor implements EdgeListener, Runnable {
 	}
 
 	private WorkMessage createPing(EdgeInfo ei) {
-		WorkState.Builder wb = WorkState.newBuilder();
+		WorkMessage.Builder wb = WorkMessage.newBuilder();
 		PingMessage.Builder pingMessage = PingMessage.newBuilder();
 
 		pingMessage.setNodeId(state.getConf().getNodeId());
