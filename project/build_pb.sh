@@ -32,4 +32,4 @@ $PROTOC_HOME/usr/local/bin/protoc --proto_path=${project_base}/resources --java_
 
 $PROTOC_HOME/usr/local/bin/protoc --proto_path=${project_base}/resources --java_out=${project_base}/generated ${project_base}/resources/VoteRPC.proto
 
-$PROTOC_HOME/usr/local/bin/protoc --proto_path=${project_base}/resources --java_out=${project_base}/generated ${project_base}/resources/Work.proto
+$PROTOC_HOME/usr/local/bin/protoc --proto_path=${project_base}/resources --java_out=${project_base}/generated ${project_base}/resources/work.proto
